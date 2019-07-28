@@ -5,33 +5,18 @@
 ## Python backend to workaround for unofficial builds
 ## This would just clone all deps from the dependencies even when its an unofficial build
 
-import json
-import os
-import subprocess
+import json, os, subprocess
 
+env = lambda var : os.environ.get(var)
 
-deps = json.loads(open("device/"+os.environ.get("oem")+"/"+os.environ.get("device")+"/"+os.environ.get("rom_vendor_name")+".dependencies").read())
-
-
-for i in deps:
-    repo = i["repository"]
-    path = i["target_path"]
-    branch = i["branch"]
-    remote = i["remote"]
-    clone_cmd = "git clone https://"
-    if remote == "github":
-        clone_cmd += "github"
-    elif remote == "gitlab":
-        clone_cmd += "gitlab"
-    else:
-        raise Exception("Remote Derped!!")
-    clone_cmd += ".com/"
-    clone_cmd += repo
-    clone_cmd += " -b "
-    clone_cmd += branch
-    clone_cmd += " "
-    clone_cmd += path
-    clone_cmd += " --depth=1"
-    print("Cloning Repository "+repo)
-    clone = subprocess.run(clone_cmd.split(" "), stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    print(clone.stdout.decode().strip(),clone.stderr.decode().strip())
+with open("device/"+env("oem")+"/"+env("device")+"/"+env("rom_vendor_name")+".dependencies") as deps:
+	for dep in json.loads(deps.read()):
+		repo = dep["repository"]
+		path = dep["target_path"]
+		branch = dep["branch"]
+		remote = dep["remote"]
+		if remote not in ("github", "gitlab"): raise Exception("Remote Derped!!")
+		clone_cmd = "git clone --depth=1 https://%s.com/%s -b %s %s" % (remote, repo, branch, path)
+		print("Cloning Repository", repo)
+		clone = subprocess.run(clone_cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		print(clone.stdout.decode().strip(),clone.stderr.decode().strip())
