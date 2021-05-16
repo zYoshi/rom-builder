@@ -1,7 +1,7 @@
 #!/bin/bash
 
 GITHUB_USER=zYoshi
-GITHUB_EMAIL=null
+GITHUB_EMAIL=zyoshi@yopmail.com
 
 KBUILD_BUILD_USER="zYoshi"
 KBUILD_BUILD_HOST="DragonEngine"
